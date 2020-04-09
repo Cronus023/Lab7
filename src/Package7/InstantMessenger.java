@@ -29,7 +29,7 @@ public class InstantMessenger {
 
 	public InstantMessenger(final MainFrame f) {
 		this.frame = f;
-		//startServer();
+		startServer();
 	}
 	
 	//method for send message inside dialog
@@ -54,7 +54,7 @@ public class InstantMessenger {
 			
 		}catch(UnknownHostException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение: узел-адресат не найден","Ошибка", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение: адресат не найден","Ошибка", JOptionPane.ERROR_MESSAGE);
 		}catch(IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение", "Ошибка",JOptionPane.ERROR_MESSAGE);
@@ -65,9 +65,7 @@ public class InstantMessenger {
 	public void sendMessage(String destinationName, String message) {
 		try {
 			if (destinationName.isEmpty()) {
-				JOptionPane.showMessageDialog(frame,
-						"Введите имя узла-получателя", "Ошибка",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(frame,"Введите имя получателя", "Ошибка",JOptionPane.ERROR_MESSAGE);
 				return;	
 			}
 			if (message.isEmpty()) {
@@ -98,7 +96,7 @@ public class InstantMessenger {
 			
 		}catch(UnknownHostException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение: узел-адресат не найден","Ошибка", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение: адресат не найден","Ошибка", JOptionPane.ERROR_MESSAGE);
 		}catch(IOException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение", "Ошибка",JOptionPane.ERROR_MESSAGE);

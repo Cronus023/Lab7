@@ -10,6 +10,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -60,7 +61,13 @@ public class DialogFrame extends JFrame {
 		
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				messenger.sendMessage(user, textAreaOut.getText(), DialogFrame.this);
+				if(messenger.getSender()!=null)
+				    messenger.sendMessage(user, textAreaOut.getText(), DialogFrame.this);
+				else 
+				{
+					JOptionPane.showMessageDialog(DialogFrame.this, "Войдите в систему!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 			}
 		});
 		

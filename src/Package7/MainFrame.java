@@ -1,7 +1,7 @@
 package Package7;
 
-import java.awt.Toolkit;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -11,12 +11,17 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import javax.swing.Action;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -72,7 +77,56 @@ public class MainFrame extends JFrame {
 		//window centre
 		final Toolkit kit = Toolkit.getDefaultToolkit();
 		setLocation((kit.getScreenSize().width - getWidth()) / 2,(kit.getScreenSize().height - getHeight()) / 2);
-	
+		
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+		JMenu chatMenu = new JMenu("Меню");
+		
+		Action logInAction = new AbstractAction("Вход") {
+			public void actionPerformed(ActionEvent arg0) {
+				String value = JOptionPane.showInputDialog(MainFrame.this, "Введите имя для общения", "Вход", JOptionPane.QUESTION_MESSAGE);
+				if (messenger.getDataBase().getUser(value) == null)
+					JOptionPane.showMessageDialog(MainFrame.this, "Пользователя с таким именем не существует", "Ошибка", JOptionPane.ERROR_MESSAGE);
+				else messenger.setSender(value);
+			}
+		};
+		
+		Action findUserAction = new AbstractAction("Поиск пользователя") {
+			public void actionPerformed(ActionEvent arg0) {
+				String value = JOptionPane.showInputDialog(MainFrame.this, "Введите имя для поиска", "Поиск пользователя", JOptionPane.QUESTION_MESSAGE);
+				User user;
+				if (messenger.getDataBase().getUser(value) == null) {
+					JOptionPane.showMessageDialog(MainFrame.this, "Пользователя "+ value + " не существует", "Ошибка", JOptionPane.ERROR_MESSAGE);
+					return;
+				} else {
+					user = messenger.getDataBase().getUser(value);
+					JOptionPane.showMessageDialog(MainFrame.this, "Пользователь найден!\n "+ user.getName() + " находится в базе данных.", "Пользователь "+ user.getName(), JOptionPane.INFORMATION_MESSAGE);
+				}
+				
+			}
+		};
+		
+		Action openPrivateDialogAction = new AbstractAction("Личное сообщение") {
+			public void actionPerformed(ActionEvent arg0) {
+				String value = JOptionPane.showInputDialog(MainFrame.this, "Кому: ", "Поиск пользователя", JOptionPane.QUESTION_MESSAGE);
+				
+				User user;
+				if (messenger.getDataBase().getUser(value) == null) {
+					JOptionPane.showMessageDialog(MainFrame.this, "Пользователя "+ value + " не существует", "Ошибка", JOptionPane.ERROR_MESSAGE);
+					return;
+				} else {
+					user = messenger.getDataBase().getUser(value);
+				}
+				DialogFrame dialogFrame = new DialogFrame(user, MainFrame.this);
+			}
+		};
+		
+		chatMenu.add(logInAction);
+		chatMenu.add(findUserAction);
+		chatMenu.add(openPrivateDialogAction);
+		
+		
+		menuBar.add(chatMenu);
 		textAreaIncoming = new JTextArea(INCOMING_AREA_DEFAULT_ROWS, 0);
 		textAreaIncoming.setEditable(false);
 		
@@ -98,8 +152,14 @@ public class MainFrame extends JFrame {
 		final JButton sendButton = new JButton("Отправить");
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    sendMessage();
-			}
+				if(messenger.getSender()!=null)
+				    messenger.sendMessage(textFieldTo.getText(),textAreaOutgoing.getText());
+				else 
+				{
+					JOptionPane.showMessageDialog(MainFrame.this, "Войдите в систему!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			} 
 		});
 		
 		// this is draw panel "message"
@@ -151,83 +211,7 @@ public class MainFrame extends JFrame {
 				.addComponent(messagePanel)
 				.addContainerGap());
 
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					final ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
-					while (!Thread.interrupted()) {
-						final Socket socket = serverSocket.accept();
-						final DataInputStream in = new DataInputStream(socket.getInputStream());
-						//read name of sender
-						final String senderName = in.readUTF();
-						//read message of sender
-						final String message = in.readUTF();
-						//close connection
-						socket.close();
-						
-						
-						//make an ip adress
-						final String address =((InetSocketAddress) socket.getRemoteSocketAddress())
-								    .getAddress()
-								        .getHostAddress();
-						
-						// and show input message
-						textAreaIncoming.append(senderName +" (" + address + "): " +message + "\n");
-					}
-				}catch(IOException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(MainFrame.this,
-					"Ошибка в работе сервера", "Ошибка",JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		}).start();
-		
-	}
-	
-	private void sendMessage() {
-		try {
-			// Получаем необходимые параметры
-			final String senderName = textFieldFrom.getText();
-			final String destinationAddress = textFieldTo.getText();
-			final String message = textAreaOutgoing.getText();
-			// Убеждаемся, что поля не пустые
-			if (senderName.isEmpty()) {
-			    JOptionPane.showMessageDialog(this,"Введите имя отправителя", "Ошибка",JOptionPane.ERROR_MESSAGE);
-			    return;
-			}
-			if (destinationAddress.isEmpty()) {
-			    JOptionPane.showMessageDialog(this,
-			    "Введите адрес узла-получателя", "Ошибка",JOptionPane.ERROR_MESSAGE);
-			    return;
-			}
-			if (message.isEmpty()) {
-			    JOptionPane.showMessageDialog(this,
-			    "Введите текст сообщения", "Ошибка",JOptionPane.ERROR_MESSAGE);
-			    return;
-			}
-			// Создаем сокет для соединения
-			final Socket socket = new Socket(destinationAddress, SERVER_PORT);
-			// Открываем поток вывода данных
-			final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-			// Записываем в поток имя
-			out.writeUTF(senderName);
-			// Записываем в поток сообщение
-			out.writeUTF(message);
-			// Закрываем сокет
-			socket.close();
-			// Помещаем сообщения в текстовую область вывода
-			textAreaIncoming.append("Я -> " + destinationAddress + ": " + message + "\n");
-			// Очищаем текстовую область ввода сообщения
-			textAreaOutgoing.setText("");
-			
-			
-		}catch(UnknownHostException e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(MainFrame.this,"Не удалось отправить сообщение: узел-адресат не найден","Ошибка", JOptionPane.ERROR_MESSAGE);
-		}catch(IOException e){
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(MainFrame.this,"Не удалось отправить сообщение", "Ошибка",JOptionPane.ERROR_MESSAGE);
-		}
+		messenger = new InstantMessenger(this);
 	}
 	
 	public static void main(String[] args) {
