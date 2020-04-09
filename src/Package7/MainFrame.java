@@ -52,7 +52,20 @@ public class MainFrame extends JFrame {
 	// text area for input message
 	private final JTextArea textAreaOutgoing;
 	
+	public int getServerPort() {
+		return SERVER_PORT;
+	}
+	public JTextArea getTextAreaIncoming() {
+		return textAreaIncoming;
+	}
+	public JTextArea getTextAreaOutgoing() {
+		return textAreaOutgoing;
+	}
 	
+	private InstantMessenger messenger;
+	public InstantMessenger getMessenger() {
+		return messenger;
+	}
 	public MainFrame(){
 		super(FRAME_TITLE);
 		setMinimumSize( new Dimension(FRAME_MINIMUM_WIDTH, FRAME_MINIMUM_HEIGHT));

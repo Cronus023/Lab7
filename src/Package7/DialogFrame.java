@@ -27,7 +27,7 @@ public class DialogFrame extends JFrame {
 	private static final int HEIGHT = 400;
 	
 	
-	//private InstantMessenger messenger;
+	private InstantMessenger messenger;
 	private final JTextArea textAreaIn;
 	private final JTextArea textAreaOut;
 	
@@ -40,7 +40,7 @@ public class DialogFrame extends JFrame {
 	}
 	
 	public DialogFrame(final User user, MainFrame frame) {
-		//messenger = frame.getMessenger();
+		messenger = frame.getMessenger();
 		
 		setTitle("Беседа с " + user.getName());
 		setMinimumSize(new Dimension(WIDTH, HEIGHT));
@@ -60,7 +60,7 @@ public class DialogFrame extends JFrame {
 		
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//messenger.sendMessage(user, textAreaOut.getText(), DialogFrame.this);
+				messenger.sendMessage(user, textAreaOut.getText(), DialogFrame.this);
 			}
 		});
 		
